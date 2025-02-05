@@ -39,7 +39,7 @@
         let isDragging = false;
         let startX = 0, startY = 0;
 
-        // Center the image on load
+        // Center the image when loaded
         function centerImage() {
             const containerRect = container.getBoundingClientRect();
             const mapRect = map.getBoundingClientRect();
@@ -61,11 +61,10 @@
             const mouseX = event.clientX - rect.left;
             const mouseY = event.clientY - rect.top;
 
-            // Adjust position to zoom towards cursor
+            // Apply zoom and adjust translation to keep zoom focused on the cursor
             const newScale = scale * zoomFactor;
-
-            translateX -= (mouseX * (zoomFactor - 1));
-            translateY -= (mouseY * (zoomFactor - 1));
+            translateX -= (mouseX * (newScale - scale));
+            translateY -= (mouseY * (newScale - scale));
 
             scale = newScale;
             updateTransform();
