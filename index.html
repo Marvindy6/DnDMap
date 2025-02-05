@@ -21,7 +21,7 @@
             position: relative;
         }
         #map {
-            transform-origin: top left;
+            transform-origin: center;
             position: absolute;
         }
     </style>
@@ -39,6 +39,17 @@
         let translateX = 0, translateY = 0;
         let isDragging = false;
         let startX, startY;
+
+        // Center the image when the page loads
+        function centerImage() {
+            const containerRect = container.getBoundingClientRect();
+            const mapRect = map.getBoundingClientRect();
+
+            translateX = (containerRect.width - mapRect.width) / 2;
+            translateY = (containerRect.height - mapRect.height) / 2;
+
+            updateTransform();
+        }
 
         // Zoom function (scroll wheel)
         container.addEventListener("wheel", (event) => {
@@ -67,7 +78,7 @@
         });
 
         // Drag move function
-        container.addEventListener("mousemove", (event) => {
+        window.addEventListener("mousemove", (event) => {
             if (!isDragging) return;
             translateX = event.clientX - startX;
             translateY = event.clientY - startY;
@@ -75,7 +86,7 @@
         });
 
         // Stop dragging function
-        container.addEventListener("mouseup", () => {
+        window.addEventListener("mouseup", () => {
             isDragging = false;
             container.style.cursor = "grab";
         });
@@ -84,6 +95,9 @@
         function updateTransform() {
             map.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
         }
+
+        // Wait for the image to load before centering it
+        map.onload = centerImage;
     </script>
 </body>
 </html>
