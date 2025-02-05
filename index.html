@@ -13,20 +13,15 @@
         #map-container {
             width: 100vw;
             height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
             overflow: hidden;
             cursor: grab;
             position: relative;
         }
         #map {
             position: absolute;
-            transform-origin: center;
-            user-drag: none;
-            -webkit-user-drag: none;
+            transform-origin: top left;
             user-select: none;
-            -webkit-user-select: none;
+            -webkit-user-drag: none;
         }
     </style>
 </head>
@@ -44,7 +39,7 @@
         let isDragging = false;
         let startX = 0, startY = 0;
 
-        // Center the image when it loads
+        // Center image when loaded
         function centerImage() {
             const containerRect = container.getBoundingClientRect();
             const mapRect = map.getBoundingClientRect();
@@ -55,20 +50,19 @@
             updateTransform();
         }
 
-        // Zoom function (scroll wheel)
+        // Zoom function (with correct focus point)
         container.addEventListener("wheel", (event) => {
             event.preventDefault();
 
-            // Get the mouse position relative to the image
+            const zoomFactor = event.deltaY > 0 ? 0.9 : 1.1;
             const rect = map.getBoundingClientRect();
+
+            // Mouse position relative to image
             const mouseX = event.clientX - rect.left;
             const mouseY = event.clientY - rect.top;
 
-            // Determine scale direction
-            const zoomFactor = event.deltaY > 0 ? 0.9 : 1.1;
+            // Adjust position to zoom towards cursor
             const newScale = scale * zoomFactor;
-
-            // Adjust position to keep zoom centered on cursor
             translateX -= (mouseX / scale) * (zoomFactor - 1);
             translateY -= (mouseY / scale) * (zoomFactor - 1);
 
@@ -84,7 +78,7 @@
             container.style.cursor = "grabbing";
         });
 
-        // Dragging function (moves image in real-time)
+        // Dragging function (moves instantly)
         window.addEventListener("mousemove", (event) => {
             if (!isDragging) return;
             translateX = event.clientX - startX;
@@ -92,21 +86,27 @@
             updateTransform();
         });
 
-        // Stop dragging when releasing mouse
+        // Stop dragging properly
         window.addEventListener("mouseup", () => {
             isDragging = false;
             container.style.cursor = "grab";
         });
 
-        // Prevent dragging the image element itself
+        // Prevent sticky drag issue if mouse leaves the window
+        window.addEventListener("mouseleave", () => {
+            isDragging = false;
+            container.style.cursor = "grab";
+        });
+
+        // Disable default image dragging
         map.ondragstart = () => false;
 
-        // Function to apply transformations
+        // Apply transformations to the image
         function updateTransform() {
             map.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
         }
 
-        // Ensure the image is centered after loading
+        // Ensure the image is centered on load
         map.onload = centerImage;
     </script>
 </body>
