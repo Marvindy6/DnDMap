@@ -7,19 +7,67 @@
     <style>
         body {
             margin: 0;
+            overflow: hidden;
+            background-color: black;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
-            background-color: black;
         }
-        img {
-            max-width: 100%;
-            height: auto;
+        #map-container {
+            cursor: grab;
+            position: relative;
+            overflow: hidden;
+            width: 100vw;
+            height: 100vh;
+        }
+        #map {
+            position: absolute;
+            transform-origin: center;
         }
     </style>
 </head>
 <body>
-    <img src="map.png" alt="DnD Map">
+    <div id="map-container">
+        <img id="map" src="map.png" alt="DnD Map">
+    </div>
+
+    <script>
+        const map = document.getElementById("map");
+        let scale = 1;
+        let originX = 0, originY = 0;
+        let startX = 0, startY = 0;
+        let isDragging = false;
+
+        // Zoom in/out with the scroll wheel
+        document.addEventListener("wheel", (event) => {
+            event.preventDefault();
+            let scaleAmount = event.deltaY > 0 ? 0.9 : 1.1;
+            scale *= scaleAmount;
+            map.style.transform = `translate(${originX}px, ${originY}px) scale(${scale})`;
+        });
+
+        // Start dragging
+        map.addEventListener("mousedown", (event) => {
+            isDragging = true;
+            startX = event.clientX - originX;
+            startY = event.clientY - originY;
+            map.style.cursor = "grabbing";
+        });
+
+        // Drag the image
+        document.addEventListener("mousemove", (event) => {
+            if (!isDragging) return;
+            originX = event.clientX - startX;
+            originY = event.clientY - startY;
+            map.style.transform = `translate(${originX}px, ${originY}px) scale(${scale})`;
+        });
+
+        // Stop dragging
+        document.addEventListener("mouseup", () => {
+            isDragging = false;
+            map.style.cursor = "grab";
+        });
+    </script>
 </body>
 </html>
