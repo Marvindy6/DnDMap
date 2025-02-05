@@ -39,6 +39,9 @@
         let isDragging = false;
         let startX = 0, startY = 0;
 
+        const MIN_ZOOM = 0.5;  // Minimum zoom factor (50% of screen)
+        const MAX_ZOOM = 5;    // Maximum zoom factor (5x zoom)
+
         // Center the image when loaded
         function centerImage() {
             const containerRect = container.getBoundingClientRect();
@@ -50,7 +53,7 @@
             updateTransform();
         }
 
-        // Zoom function (now correctly zooms toward the cursor)
+        // Zoom function (with boundaries)
         container.addEventListener("wheel", (event) => {
             event.preventDefault();
 
@@ -62,7 +65,15 @@
             const mouseY = event.clientY - rect.top;
 
             // Apply zoom and adjust translation to keep zoom focused on the cursor
-            const newScale = scale * zoomFactor;
+            let newScale = scale * zoomFactor;
+
+            // Enforce zoom boundaries (min/max zoom)
+            if (newScale < MIN_ZOOM) {
+                newScale = MIN_ZOOM;
+            } else if (newScale > MAX_ZOOM) {
+                newScale = MAX_ZOOM;
+            }
+
             translateX -= (mouseX * (newScale - scale));
             translateY -= (mouseY * (newScale - scale));
 
