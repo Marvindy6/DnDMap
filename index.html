@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My DnD Map</title>
+    <title>DnD Map Viewer</title>
     <style>
         body {
             margin: 0;
@@ -21,8 +21,12 @@
             position: relative;
         }
         #map {
-            transform-origin: center;
             position: absolute;
+            transform-origin: center;
+            user-drag: none;
+            -webkit-user-drag: none;
+            user-select: none;
+            -webkit-user-select: none;
         }
     </style>
 </head>
@@ -38,9 +42,9 @@
         let scale = 1;
         let translateX = 0, translateY = 0;
         let isDragging = false;
-        let startX, startY;
+        let startX = 0, startY = 0;
 
-        // Center the image when the page loads
+        // Center the image when it loads
         function centerImage() {
             const containerRect = container.getBoundingClientRect();
             const mapRect = map.getBoundingClientRect();
@@ -54,22 +58,25 @@
         // Zoom function (scroll wheel)
         container.addEventListener("wheel", (event) => {
             event.preventDefault();
-            const scaleAmount = event.deltaY > 0 ? 0.9 : 1.1;
-            const rect = map.getBoundingClientRect();
 
-            // Calculate mouse position relative to the image
+            // Get the mouse position relative to the image
+            const rect = map.getBoundingClientRect();
             const mouseX = event.clientX - rect.left;
             const mouseY = event.clientY - rect.top;
 
-            // Adjust translateX and translateY to keep zoom centered on cursor
-            translateX -= (mouseX / scale) * (scaleAmount - 1);
-            translateY -= (mouseY / scale) * (scaleAmount - 1);
+            // Determine scale direction
+            const zoomFactor = event.deltaY > 0 ? 0.9 : 1.1;
+            const newScale = scale * zoomFactor;
 
-            scale *= scaleAmount;
+            // Adjust position to keep zoom centered on cursor
+            translateX -= (mouseX / scale) * (zoomFactor - 1);
+            translateY -= (mouseY / scale) * (zoomFactor - 1);
+
+            scale = newScale;
             updateTransform();
         });
 
-        // Start drag function
+        // Start dragging
         container.addEventListener("mousedown", (event) => {
             isDragging = true;
             startX = event.clientX - translateX;
@@ -77,7 +84,7 @@
             container.style.cursor = "grabbing";
         });
 
-        // Drag move function
+        // Dragging function (moves image in real-time)
         window.addEventListener("mousemove", (event) => {
             if (!isDragging) return;
             translateX = event.clientX - startX;
@@ -85,18 +92,21 @@
             updateTransform();
         });
 
-        // Stop dragging function
+        // Stop dragging when releasing mouse
         window.addEventListener("mouseup", () => {
             isDragging = false;
             container.style.cursor = "grab";
         });
 
-        // Function to update transformation
+        // Prevent dragging the image element itself
+        map.ondragstart = () => false;
+
+        // Function to apply transformations
         function updateTransform() {
             map.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
         }
 
-        // Wait for the image to load before centering it
+        // Ensure the image is centered after loading
         map.onload = centerImage;
     </script>
 </body>
