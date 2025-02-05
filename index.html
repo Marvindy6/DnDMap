@@ -39,8 +39,8 @@
         let isDragging = false;
         let startX = 0, startY = 0;
 
-        const MIN_ZOOM = 0.5;  // Minimum zoom factor (50% of screen)
-        const MAX_ZOOM = 5;    // Maximum zoom factor (5x zoom)
+        const MIN_ZOOM = 0.5;  // Static zoom-out limit (50% of original size)
+        const MAX_ZOOM = 2;    // Static zoom-in limit (double the original size)
 
         // Center the image when loaded
         function centerImage() {
@@ -53,29 +53,25 @@
             updateTransform();
         }
 
-        // Zoom function (with boundaries)
+        // Zoom function (with fixed limits for in/out)
         container.addEventListener("wheel", (event) => {
             event.preventDefault();
 
-            // Calculate zoom factor (up or down)
+            // Calculate zoom direction
             const zoomFactor = event.deltaY > 0 ? 0.9 : 1.1;
-            const rect = map.getBoundingClientRect();
+            let newScale = scale * zoomFactor;
 
-            // Mouse position relative to the image
+            // Enforce fixed zoom boundaries (zoom in no more than 2x, zoom out no less than 0.5x)
+            newScale = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, newScale));
+
+            const rect = map.getBoundingClientRect();
             const mouseX = event.clientX - rect.left;
             const mouseY = event.clientY - rect.top;
 
-            // Calculate the new scale
-            let newScale = scale * zoomFactor;
-
-            // Ensure the scale stays within the min/max boundaries
-            newScale = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, newScale));
-
-            // Calculate the amount of movement needed to zoom toward the cursor
+            // Apply translation to keep zoom focused on mouse position
             translateX -= (mouseX * (newScale - scale));
             translateY -= (mouseY * (newScale - scale));
 
-            // Update the scale and apply the new transform
             scale = newScale;
             updateTransform();
         });
